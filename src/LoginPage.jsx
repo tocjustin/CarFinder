@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
-import loginLogo from './assets/car-logo.png'
-import { Link } from 'react-router-dom';
+import loginLogo from './assets/car-logo.png';
+import { Link, useNavigate  } from 'react-router-dom';
+import axios from 'axios';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Logging in with:', email, password);
-    // You might want to add validation or API calls here
+    try {
+      const response = await axios.post('http://localhost:5000/login', { email, password });
+      if (response.status === 200) {
+        console.log(response.data.message);
+        navigate('/home');
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error("Login error", error.response || error);
+      alert('Login failed. Please try again.');
+    }
   };
 
   return (
