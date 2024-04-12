@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import loginLogo from './assets/car-logo.png'
+import { Link, useNavigate  } from 'react-router-dom';
 import axios from 'axios';
 
 const RegisterPage = () => {
@@ -7,19 +8,30 @@ const RegisterPage = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     console.log('Registering with:', firstName, lastName, email);
-    try {
+    try 
+    {
       const response = await axios.post('http://localhost:5000/register', {
         firstName,
         lastName,
         email,
         password
       });
-      console.log(response.data);
-    } catch (error) {
+      if(response.status == 201)
+      {
+        console.log(response.data.message);
+        navigate('/home')
+      }
+      else
+      {
+        alert(response.data.message)
+      }
+    } 
+    catch (error) {
       console.error("Registration error", error.response || error);
       // Handle error, e.g., showing error message
     }

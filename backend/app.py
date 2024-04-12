@@ -77,7 +77,6 @@ def register():
     db.session.commit()
     return jsonify({"message": "User registered successfully"}), 201
 
-
 @app.route('/protected')
 @login_required
 def protected():
