@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import loginLogo from './assets/car-logo.png'
+import { Link, useNavigate  } from 'react-router-dom';
 import axios from 'axios';
 
 const RegisterPage = () => {
@@ -76,6 +77,9 @@ const RegisterPage = () => {
           />
         </div>
         <button type="submit" className="login-button">Register Now</button>
+        <p className="register-link">
+         <Link to="/">Back to login page</Link>
+        </p>
       </form>
     </div>
   );
