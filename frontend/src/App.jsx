@@ -4,6 +4,7 @@ import LoginPage from './LoginPage.jsx';
 import RegisterPage from './RegisterPage.jsx';
 import HomePage from './HomePage.jsx';
 import ResultsPage from "./ResultsPage.jsx";
+import SearchResults from './SearchResults.jsx';
 // Temporarily use a simplified RegisterPage for testing
 //const RegisterPage = () => <div>Register Page Placeholder</div>;
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/register" element={<RegisterPage/>}/>
           <Route path="/home" element={<HomePage/>}/>
           <Route path="/results" element={<ResultsPage />} />
+          <Route path ="/results" element={<SearchResults/>}/>
         </Routes>
       </BrowserRouter>
     </div>
