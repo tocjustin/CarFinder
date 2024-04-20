@@ -7,6 +7,9 @@ from flask_migrate import Migrate
 from sqlalchemy.testing.suite.test_reflection import users
 from werkzeug.security import check_password_hash, generate_password_hash
 
+
+from backend.scrape import scrape_car_listings
+
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -83,6 +86,21 @@ def register():
 def protected():
     return 'Logged in as: ' + flask_login.current_user.id
 
+
+@app.route('/search')
+def search():
+    # Extracting parameters from the query string
+    brand = request.args.get('brand', '')
+    model = request.args.get('model', '')
+    year = request.args.get('year', '')
+    price = request.args.get('priceRange', '')
+    mileage = request.args.get('mileage', '')
+    zip_code = request.args.get('zip', '')
+    maximum_distance = request.args.get('maximumDistance', '')
+
+    # Call the scraping function with these parameters
+    results = scrape_car_listings(brand, model, year, price, mileage, zip_code, maximum_distance)
+    return jsonify(results)
 
 if __name__ == '__main__':
     app.run(debug=True)
