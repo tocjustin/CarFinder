@@ -71,4 +71,56 @@
   .search-button:hover {
     background-color: #45a049; /* Darker shade of button color on hover */
   }
+
+  /*.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  */
+
+  .dropdown-menu {
+    position: absolute;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ddd;
+    z-index: 100;  
+}
+
+.dropdown-menu button {
+  padding: 10px 20px;
+  margin-right: 10px; /* Spacing between buttons */
+  cursor: pointer;
+}
+
+.dropdown-menu button:last-child {
+  margin-right: 0; /* Remove margin for the last button */
+}
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  input[type="button"] {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+  }
+  
+  input[type="button"]:hover {
+    background-color: #45a049;
+  }
+  
   

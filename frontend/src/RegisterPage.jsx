@@ -10,7 +10,7 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleRegister = async(e) => {
     e.preventDefault();
     console.log('Registering with:', firstName, lastName, email);
     try 
@@ -73,17 +73,6 @@ const RegisterPage = () => {
             className="input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            className="input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
