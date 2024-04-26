@@ -113,29 +113,39 @@ def search():
 def saveSearch():
     data = request.get_json()
 
-    brand = request.args.get('brand', '')
-    model = request.args.get('model', '')
-    year = request.args.get('year', '')
-    price = request.args.get('priceRange', '')
-    mileage = request.args.get('mileage', '')
-    zip_code = request.args.get('zip', '')
-    maximum_distance = request.args.get('maximumDistance', '')
+    params = data.get('params', {})
+
+    brand = params.get('brand', '')
+    model = params.get('model', '')
+    year = params.get('year', '')
+    price = params.get('price', '')
+    mileage = params.get('mileage', '')
+    zip_code = params.get('zip', '')
+    maximum_distance = params.get('maximumDistance', '')
+
+    if year.isdigit():
+        year = int(year)  # Convert year to int
+        price = int(price)
+        mileage = int(mileage)
+        zip_code = int(zip_code)
+        maximum_distance = int(maximum_distance)
+    else:
+        return jsonify({"error": "Invalid or missing year"}), 400
 
     new_savedsearch = Search(
         brand=brand,
-        model = model,
-        year = year,
-        price_range = price,
-        mileage = mileage,
-        zip_code = zip_code,
-        maximum_distance = maximum_distance
+        model=model,
+        year=year,
+        price_range=price,
+        mileage=mileage,
+        zip_code=zip_code,
+        maximum_distance=maximum_distance
     )
 
     db.session.add(new_savedsearch)
     db.session.commit()
 
     return jsonify({"message": "Search registered successfully"}), 201
-
 
 if __name__ == '__main__':
     app.run(debug=True)
