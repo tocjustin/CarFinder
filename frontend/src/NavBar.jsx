@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
 import axios from "axios";
 import {AppBar, Button, Toolbar, Typography} from "@mui/material";
 
 const NavBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     axios.post('http://localhost:5000/logout', {}, { withCredentials: true })
@@ -16,6 +17,10 @@ const NavBar = () => {
             console.error('Logout failed:', error);
         });
   };
+
+  if (location.pathname === '/login') {
+    return null; // Don't render the NavBar on the login page
+  }
 
   return (
     <AppBar position="static">

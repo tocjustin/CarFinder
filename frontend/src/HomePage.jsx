@@ -4,7 +4,7 @@ import {useNavigate} from 'react-router-dom';
 import axios from "axios";
 import {
     MenuItem, Select, FormControl, TextField, Slider, Box, Typography, Button,
-    Checkbox, FormControlLabel
+    Checkbox, FormControlLabel, CircularProgress
 } from '@mui/material';//import './HomePage.css'; // Assuming you will create a separate CSS file for styling
 
 const HomePage = () => {
@@ -20,6 +20,7 @@ const HomePage = () => {
     });
 
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
     const toggleDropdown = () => setShowDropdown(!showDropdown);
 
@@ -47,6 +48,7 @@ const HomePage = () => {
 
     const handleSubmit = () => {
         console.log('Search Data:', formData);
+        setIsLoading(true);
         // Use axios to send a GET request to your backend
         axios.get('http://localhost:5000/search', {
             params: {
@@ -85,6 +87,9 @@ const HomePage = () => {
             .catch(error => {
                 // handle error
                 console.log(error);
+            })
+            .finally(() => {
+                setIsLoading(false);
             });
     };
 
@@ -146,20 +151,25 @@ const HomePage = () => {
                         max={200000}
                         step={500}
                     />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={formData.saveSearch}
-                                onChange={handleCheckboxChange}
-                                name="saveSearch"
-                                color="primary"
-                            />
-                        }
-                        label="Save this search"
-                    />
-                    <Button onClick={handleSubmit} variant="contained" color="primary">Submit</Button>
-                    <Button onClick={() => setShowDropdown(false)} variant="outlined" color="secondary"
-                            sx={{ml: 2}}>Cancel</Button>
+                    <Box sx={{mt: 2, mb: 2}}>
+                        <Button onClick={handleSubmit} variant="contained" color="primary" disabled={isLoading}>
+                            {isLoading ? <CircularProgress size={24} color="inherit"/> : "Submit"}
+                        </Button>
+                        <Button onClick={() => setShowDropdown(false)} variant="outlined" color="secondary"
+                                sx={{ml: 2}}>Cancel</Button>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={formData.saveSearch}
+                                    onChange={handleCheckboxChange}
+                                    name="saveSearch"
+                                    color="primary"
+                                />
+                            }
+                            label="Save this search"
+                            style={{marginLeft: 20}}
+                        />
+                    </Box>
                 </Box>
             )}
         </div>
