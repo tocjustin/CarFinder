@@ -2,8 +2,10 @@ import backgroundImage from './assets/cars.jpg';
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from "axios";
-import {MenuItem, Select, FormControl, TextField, Slider, Box, Typography, Button} from '@mui/material';
-//import './HomePage.css'; // Assuming you will create a separate CSS file for styling
+import {
+    MenuItem, Select, FormControl, TextField, Slider, Box, Typography, Button,
+    Checkbox, FormControlLabel
+} from '@mui/material';//import './HomePage.css'; // Assuming you will create a separate CSS file for styling
 
 const HomePage = () => {
     const [showDropdown, setShowDropdown] = useState(false);
@@ -25,6 +27,13 @@ const HomePage = () => {
         setFormData(prev => ({
             ...prev,
             [name]: newValue
+        }));
+    };
+
+    const handleCheckboxChange = (event) => {
+        setFormData(prev => ({
+            ...prev,
+            saveSearch: event.target.checked
         }));
     };
 
@@ -52,6 +61,25 @@ const HomePage = () => {
         })
             .then(response => {
                 // handle success
+                if (formData.saveSearch) {
+                    console.log('Saving search...');
+                    axios.post('http://localhost:5000/save_search', {
+                        brand: formData.make,
+                        model: formData.model,
+                        year: formData.year,
+                        price: formData.maxPrice,
+                        mileage: formData.maxMileage,
+                        zip: formData.zipcode,
+                        maximumDistance: formData.milesRange,
+                    }, {withCredentials: true})  // Moved withCredentials inside an options object
+                        .then(saveResponse => {
+                            console.log('Search saved:', saveResponse.data);
+                            navigate("/results", {state: {searchResults: response.data}}); // Navigate after save success
+                        })
+                        .catch(saveError => {
+                            console.log('Error saving search:', saveError);
+                        });
+                }
                 navigate("/results", {state: {searchResults: response.data}});
             })
             .catch(error => {
@@ -117,6 +145,17 @@ const HomePage = () => {
                         min={0}
                         max={200000}
                         step={500}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={formData.saveSearch}
+                                onChange={handleCheckboxChange}
+                                name="saveSearch"
+                                color="primary"
+                            />
+                        }
+                        label="Save this search"
                     />
                     <Button onClick={handleSubmit} variant="contained" color="primary">Submit</Button>
                     <Button onClick={() => setShowDropdown(false)} variant="outlined" color="secondary"
