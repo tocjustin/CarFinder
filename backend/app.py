@@ -1,7 +1,7 @@
 from flask_cors import CORS
 import flask_login
 from flask import Flask, request, redirect, url_for, render_template, jsonify
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy.testing.suite.test_reflection import users
@@ -9,10 +9,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from backend.scrape import scrape_car_listings
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://myuser:mypassword@localhost/mydatabase'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -65,17 +67,25 @@ def request_loader(request):
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data['email']
-    password = data['password']
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({"success": False, "message": "Email and password are required"}), 400
 
     user = User.query.filter_by(email=email).first()
     if user and check_password_hash(user.password_hash, password):
         login_user(user)
-        # Return a success response
         return jsonify({"success": True, "message": "Login successful"}), 200
     else:
-        # Return an error response
         return jsonify({"success": False, "message": "Invalid email or password"}), 401
+
+
+@app.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"success": True, "message": "You have been logged out"}), 200
 
 
 @app.route('/register', methods=['POST'])

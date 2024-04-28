@@ -71,7 +71,7 @@ const HomePage = () => {
                         mileage: formData.maxMileage,
                         zip: formData.zipcode,
                         maximumDistance: formData.milesRange,
-                    }, {withCredentials: true})  // Moved withCredentials inside an options object
+                    }, {withCredentials: true})
                         .then(saveResponse => {
                             console.log('Search saved:', saveResponse.data);
                             navigate("/results", {state: {searchResults: response.data}}); // Navigate after save success

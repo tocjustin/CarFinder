@@ -4,6 +4,7 @@ import LoginPage from './LoginPage.jsx';
 import RegisterPage from './RegisterPage.jsx';
 import HomePage from './HomePage.jsx';
 import ResultsPage from "./ResultsPage.jsx";
+import NavBar from "./NavBar.jsx";
 // Temporarily use a simplified RegisterPage for testing
 //const RegisterPage = () => <div>Register Page Placeholder</div>;
 
@@ -12,6 +13,7 @@ function App() {
     <>
     <div>
       <BrowserRouter>
+        <NavBar />
         <Routes>
           <Route index element={<LoginPage/>}/>
           <Route path="/login" element={<LoginPage/>}/>
