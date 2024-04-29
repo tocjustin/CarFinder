@@ -238,7 +238,90 @@ def mark_notification_as_read():
         return jsonify({"success": False, "message": "Notification not found"}), 404
 
 
-scheduler.add_job(func=check_alerts, trigger='interval', seconds=10)
+@app.route('/notifications/delete-all', methods=['POST'])
+@login_required
+def delete_all_notifications():
+    try:
+        # Fetch all notifications for the currently logged-in user
+        notifications = Notification.query.filter_by(user_id=flask_login.current_user.id).all()
+        for notification in notifications:
+            db.session.delete(notification)
+        db.session.commit()
+        return jsonify({"success": True, "message": "All notifications have been deleted"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/user/searches', methods=['GET'])
+@login_required
+def get_user_searches():
+    searches = Search.query.filter_by(user_id=flask_login.current_user.id).all()
+    return jsonify([{
+        'id': search.id,
+        'brand': search.brand,
+        'model': search.model,
+        'year': search.year,
+        'price_range': search.price_range,
+        'mileage': search.mileage,
+        'zip_code': search.zip_code,
+        'maximum_distance': search.maximum_distance
+    } for search in searches]), 200
+
+
+@app.route('/search/<int:search_id>', methods=['PUT'])
+@login_required
+def update_search(search_id):
+    data = request.get_json()
+    search = Search.query.filter_by(id=search_id, user_id=flask_login.current_user.id).first()
+
+    if not search:
+        return jsonify({"success": False, "message": "Search not found"}), 404
+
+    try:
+        # Update search attributes with validation
+        if 'brand' in data:
+            search.brand = data['brand']
+        if 'model' in data:
+            search.model = data['model']
+        if 'year' in data:
+            search.year = int(data['year'])  # Ensure the year is an integer
+        if 'price_range' in data:
+            search.price_range = data['price_range']
+        if 'mileage' in data:
+            search.mileage = int(data['mileage'])  # Ensure mileage is an integer
+        if 'zip_code' in data:
+            search.zip_code = data['zip_code']
+        if 'maximum_distance' in data:
+            search.maximum_distance = int(data['maximum_distance'])  # Ensure distance is an integer
+
+        db.session.commit()
+        return jsonify({"success": True, "message": "Search updated successfully"}), 200
+    except ValueError:
+        db.session.rollback()
+        return jsonify({"success": False, "message": "Invalid input data"}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/search/<int:search_id>', methods=['DELETE'])
+@login_required
+def delete_search(search_id):
+    search = Search.query.filter_by(id=search_id, user_id=flask_login.current_user.id).first()
+
+    if not search:
+        return jsonify({"success": False, "message": "Search not found"}), 404
+
+    try:
+        db.session.delete(search)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Search deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+scheduler.add_job(func=check_alerts, trigger='interval', seconds=60)
 scheduler.start()
 
 if __name__ == '__main__':
