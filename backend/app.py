@@ -57,10 +57,11 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message = db.Column(db.String(256))
+    url = db.Column(db.String(512))
     read = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
-        return f'<Notification {self.message}>'
+        return f'<Notification {self.message} URL={self.url}>'
 
 
 @login_manager.user_loader
@@ -182,23 +183,25 @@ def check_alerts():
                 search.zip_code, search.maximum_distance
             )
             for result in results:
-                message = f"Car found: {result['title']} at {result['price']}\n{result['dealer_url']}"
-                # Try to add a new notification, skip if already exists
-                add_notification(search.user_id, message)
+                message = f"Car found: {result['title']} at {result['price']}"
+                url = result['dealer_url']  # Separate URL for the listing
+
+                add_notification(search.user_id, message, url)
 
 
-def add_notification(user_id, message):
-    # Check if the same notification message already exists for the user
-    existing_notification = Notification.query.filter_by(user_id=user_id, message=message).first()
+def add_notification(user_id, message, url):
+    # Check if the same notification message and URL already exist for the user
+    existing_notification = Notification.query.filter_by(user_id=user_id, message=message, url=url).first()
     if existing_notification:
-        print("Notification already exists for this user with the same message.")
+        print("Notification already exists for this user with the same message and URL.")
         return False
 
     # Create a new notification since it doesn't exist
     new_notification = Notification(
         user_id=user_id,
         message=message,
-        read=False
+        read=False,
+        url=url
     )
     db.session.add(new_notification)
     db.session.commit()
@@ -213,7 +216,8 @@ def get_notifications():
     notifications_data = [{
         'id': notification.id,
         'message': notification.message,
-        'read': notification.read
+        'read': notification.read,
+        'url': notification.url
     } for notification in notifications]
 
     print(notifications_data)
@@ -234,7 +238,7 @@ def mark_notification_as_read():
         return jsonify({"success": False, "message": "Notification not found"}), 404
 
 
-scheduler.add_job(func=check_alerts, trigger='interval', hours=12)
+scheduler.add_job(func=check_alerts, trigger='interval', seconds=10)
 scheduler.start()
 
 if __name__ == '__main__':
