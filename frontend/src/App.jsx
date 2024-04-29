@@ -5,8 +5,8 @@ import RegisterPage from './RegisterPage.jsx';
 import HomePage from './HomePage.jsx';
 import ResultsPage from "./ResultsPage.jsx";
 import NavBar from "./NavBar.jsx";
-// Temporarily use a simplified RegisterPage for testing
-//const RegisterPage = () => <div>Register Page Placeholder</div>;
+import axios from 'axios';
+axios.defaults.withCredentials = true;
 
 function App() {
   return (

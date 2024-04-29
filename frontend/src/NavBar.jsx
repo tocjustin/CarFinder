@@ -2,6 +2,7 @@ import React from 'react';
 import {Link, useLocation, useNavigate} from 'react-router-dom';
 import axios from "axios";
 import {AppBar, Button, Toolbar, Typography} from "@mui/material";
+import AlertsDropdown from './AlertsDropdown';
 
 const NavBar = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const NavBar = () => {
   };
 
   if (location.pathname === '/login') {
-    return null; // Don't render the NavBar on the login page
+    return null;
   }
 
   return (
@@ -31,7 +32,7 @@ const NavBar = () => {
           </Typography>
         </Link>
         <div>
-          <Button color="inherit" component={Link} to="/alerts">My Alerts</Button>
+            <AlertsDropdown />
           <Button color="inherit" onClick={handleLogout}>Log Out</Button>
         </div>
       </Toolbar>

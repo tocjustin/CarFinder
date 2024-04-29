@@ -1,11 +1,12 @@
-from flask_cors import CORS
 import flask_login
-from flask import Flask, request, redirect, url_for, render_template, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy.testing.suite.test_reflection import users
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
+
 from backend.scrape import scrape_car_listings
 
 app = Flask(__name__)
@@ -21,6 +22,8 @@ migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+scheduler = BackgroundScheduler()
 
 
 class User(UserMixin, db.Model):
@@ -48,6 +51,16 @@ class Search(db.Model):
 
     def __repr__(self):
         return f'<Search {self.brand} {self.model} {self.year}>'
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.String(256))
+    read = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f'<Notification {self.message}>'
 
 
 @login_manager.user_loader
@@ -158,6 +171,71 @@ def save_search():
     except ValueError:
         return jsonify({"error": "Invalid input data"}), 400
 
+
+def check_alerts():
+    with app.app_context():
+        searches = Search.query.all()
+        for search in searches:
+            results = scrape_car_listings(
+                search.brand, search.model, search.year,
+                search.price_range, search.mileage,
+                search.zip_code, search.maximum_distance
+            )
+            for result in results:
+                message = f"Car found: {result['title']} at {result['price']}\n{result['dealer_url']}"
+                # Try to add a new notification, skip if already exists
+                add_notification(search.user_id, message)
+
+
+def add_notification(user_id, message):
+    # Check if the same notification message already exists for the user
+    existing_notification = Notification.query.filter_by(user_id=user_id, message=message).first()
+    if existing_notification:
+        print("Notification already exists for this user with the same message.")
+        return False
+
+    # Create a new notification since it doesn't exist
+    new_notification = Notification(
+        user_id=user_id,
+        message=message,
+        read=False
+    )
+    db.session.add(new_notification)
+    db.session.commit()
+    print("New notification added.")
+    return True
+
+
+@app.route('/notifications', methods=['GET'])
+def get_notifications():
+    # Fetch notifications for the currently logged-in user
+    notifications = Notification.query.filter_by(user_id=flask_login.current_user.id).all()
+    notifications_data = [{
+        'id': notification.id,
+        'message': notification.message,
+        'read': notification.read
+    } for notification in notifications]
+
+    print(notifications_data)
+    return jsonify(notifications_data), 200
+
+
+@app.route('/notifications/mark-read', methods=['POST'])
+def mark_notification_as_read():
+    data = request.get_json()
+    notification_id = data.get('id')
+    notification = Notification.query.filter_by(id=notification_id, user_id=current_user.id).first()
+
+    if notification:
+        notification.read = True
+        db.session.commit()
+        return jsonify({"success": True, "message": "Notification marked as read"}), 200
+    else:
+        return jsonify({"success": False, "message": "Notification not found"}), 404
+
+
+scheduler.add_job(func=check_alerts, trigger='interval', hours=12)
+scheduler.start()
 
 if __name__ == '__main__':
     app.run(debug=True)
