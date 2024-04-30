@@ -40,8 +40,8 @@ def scrape_car_listings(brand, model, year, price, mileage, zip_code, maximum_di
 
         detail_response = requests.get(details_url, headers=headers)
         detail_soup = BeautifulSoup(detail_response.text, 'html.parser')
-        images = [img['src'] for img in detail_soup.find_all('img', class_='vehicle-image') if 'src' in img.attrs]
-
+        image_elements = listing.find_all('img', class_='vehicle-image js-lazy-load styles-lazy-load')
+        images = [img.get('data-src', img['src']) for img in image_elements if 'src' in img.attrs]
         dealer_link_element = detail_soup.find('a', attrs={'data-linkname': 'dealer-external-site-listing'})
         if not dealer_link_element:
             dealer_link_element = detail_soup.find('a', attrs={'data-linkname': 'dealer-external-site'})
