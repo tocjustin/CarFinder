@@ -321,7 +321,7 @@ def delete_search(search_id):
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-scheduler.add_job(func=check_alerts, trigger='interval', hour=2)
+scheduler.add_job(func=check_alerts, trigger='interval', hours=2)
 scheduler.start()
 
 if __name__ == '__main__':
